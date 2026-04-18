@@ -360,6 +360,45 @@ class Spool(BaseModel):
         )
 
 
+class Printer(BaseModel):
+    id: int = Field(description="Unique internal ID of this printer.")
+    registered: SpoolmanDateTime = Field(description="When the printer was registered in the database. UTC Timezone.")
+    name: str = Field(max_length=64, description="Printer name.", examples=["Prusa MK4"])
+    spool: Spool | None = Field(None, description="The spool currently assigned to this printer.")
+    comment: str | None = Field(
+        None,
+        max_length=1024,
+        description="Free text comment about this printer.",
+        examples=[""],
+    )
+    external_id: str | None = Field(
+        None,
+        max_length=256,
+        description=(
+            "Set if this printer comes from an external database. This contains the ID in the external database."
+        ),
+    )
+    extra: dict[str, str] = Field(
+        description=(
+            "Extra fields for this printer. All values are JSON-encoded data. "
+            "Query the /fields endpoint for more details about the fields."
+        ),
+    )
+
+    @staticmethod
+    def from_db(item: models.Printer) -> "Printer":
+        """Create a new Pydantic printer object from a database printer object."""
+        return Printer(
+            id=item.id,
+            registered=item.registered,
+            name=item.name,
+            spool=Spool.from_db(item.spool) if item.spool is not None else None,
+            comment=item.comment,
+            external_id=item.external_id,
+            extra={field.key: field.value for field in item.extra},
+        )
+
+
 class Info(BaseModel):
     version: str = Field(examples=["0.7.0"])
     debug_mode: bool = Field(examples=[False])
@@ -420,6 +459,13 @@ class VendorEvent(Event):
 
     payload: Vendor = Field(description="Updated vendor.")
     resource: Literal["vendor"] = Field(description="Resource type.")
+
+
+class PrinterEvent(Event):
+    """Event."""
+
+    payload: Printer = Field(description="Updated printer.")
+    resource: Literal["printer"] = Field(description="Resource type.")
 
 
 class SettingEvent(Event):

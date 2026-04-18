@@ -305,3 +305,61 @@ def assert_httpx_code(response: httpx.Response, code: int) -> None:
     """Assert that a response has the expected status code."""
     if response.status_code != code:
         pytest.fail(f"Request failed: {response.status_code} {response.text}")
+
+
+@contextmanager
+def random_spool_impl():
+    """Return a random spool."""
+    with random_filament_impl() as random_filament:
+        result = httpx.post(
+            f"{URL}/api/v1/spool",
+            json={
+                "filament_id": random_filament["id"],
+                "remaining_weight": 1000,
+            },
+        )
+        result.raise_for_status()
+
+        spool: dict[str, Any] = result.json()
+        yield spool
+
+        httpx.delete(f"{URL}/api/v1/spool/{spool['id']}").raise_for_status()
+
+
+@pytest.fixture
+def random_spool():
+    """Return a random spool."""
+    with random_spool_impl() as random_spool:
+        yield random_spool
+
+
+@contextmanager
+def random_printer_impl():
+    """Return a random printer."""
+    result = httpx.post(
+        f"{URL}/api/v1/printer",
+        json={
+            "name": "Test Printer",
+            "comment": "A test printer",
+        },
+    )
+    result.raise_for_status()
+
+    printer: dict[str, Any] = result.json()
+    yield printer
+
+    httpx.delete(f"{URL}/api/v1/printer/{printer['id']}").raise_for_status()
+
+
+@pytest.fixture
+def random_printer():
+    """Return a random printer."""
+    with random_printer_impl() as random_printer:
+        yield random_printer
+
+
+@pytest.fixture(scope="module")
+def random_printer_mod():
+    """Return a random printer."""
+    with random_printer_impl() as random_printer:
+        yield random_printer

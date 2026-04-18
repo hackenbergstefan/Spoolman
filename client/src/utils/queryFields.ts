@@ -17,6 +17,7 @@ export enum EntityType {
   vendor = "vendor",
   filament = "filament",
   spool = "spool",
+  printer = "printer",
 }
 
 export interface FieldParameters {

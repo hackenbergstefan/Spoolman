@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from spoolman.database import filament as db_filament
+from spoolman.database import printer as db_printer
 from spoolman.database import setting as db_setting
 from spoolman.database import spool as db_spool
 from spoolman.database import vendor as db_vendor
@@ -22,6 +23,7 @@ class EntityType(Enum):
     vendor = "vendor"
     filament = "filament"
     spool = "spool"
+    printer = "printer"
 
 
 class ExtraFieldType(Enum):
@@ -228,6 +230,8 @@ async def delete_extra_field(db: AsyncSession, entity_type: EntityType, key: str
         await db_filament.clear_extra_field(db, key)
     elif entity_type == EntityType.spool:
         await db_spool.clear_extra_field(db, key)
+    elif entity_type == EntityType.printer:
+        await db_printer.clear_extra_field(db, key)
     else:
         raise ValueError(f"Unknown entity type {entity_type.name}.")
 

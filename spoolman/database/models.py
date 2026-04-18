@@ -76,6 +76,7 @@ class Spool(Base):
     lot_nr: Mapped[str | None] = mapped_column(String(64))
     comment: Mapped[str | None] = mapped_column(String(1024))
     archived: Mapped[bool | None] = mapped_column()
+    printer: Mapped[Optional["Printer"]] = relationship(back_populates="spool")
     extra: Mapped[list["SpoolField"]] = relationship(
         back_populates="spool",
         cascade="save-update, merge, delete, delete-orphan",
@@ -114,5 +115,31 @@ class SpoolField(Base):
 
     spool_id: Mapped[int] = mapped_column(ForeignKey("spool.id"), primary_key=True, index=True)
     spool: Mapped["Spool"] = relationship(back_populates="extra")
+    key: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
+    value: Mapped[str] = mapped_column(Text())
+
+
+class Printer(Base):
+    __tablename__ = "printer"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    registered: Mapped[datetime] = mapped_column()
+    name: Mapped[str] = mapped_column(String(64))
+    spool_id: Mapped[int | None] = mapped_column(ForeignKey("spool.id"), unique=True)
+    spool: Mapped[Optional["Spool"]] = relationship(back_populates="printer")
+    comment: Mapped[str | None] = mapped_column(String(1024))
+    external_id: Mapped[str | None] = mapped_column(String(256))
+    extra: Mapped[list["PrinterField"]] = relationship(
+        back_populates="printer",
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy="joined",
+    )
+
+
+class PrinterField(Base):
+    __tablename__ = "printer_field"
+
+    printer_id: Mapped[int] = mapped_column(ForeignKey("printer.id"), primary_key=True, index=True)
+    printer: Mapped["Printer"] = relationship(back_populates="extra")
     key: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
     value: Mapped[str] = mapped_column(Text())

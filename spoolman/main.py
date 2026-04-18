@@ -120,14 +120,18 @@ def add_cors_middleware() -> None:
     if not origins:
         return
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-        expose_headers=["X-Total-Count"],
-    )
+    cors_kwargs = {
+        "allow_origins": origins,
+        "allow_credentials": True,
+        "allow_methods": ["*"],
+        "allow_headers": ["*"],
+        "expose_headers": ["X-Total-Count"],
+    }
+
+    app.add_middleware(CORSMiddleware, **cors_kwargs)
+    # Sub-applications mounted via app.mount() don't inherit middleware,
+    # so we need to add CORS to the v1 sub-app as well.
+    v1_app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 
 add_cors_middleware()

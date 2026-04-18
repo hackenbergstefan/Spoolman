@@ -8,7 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from spoolman.database import filament, spool, vendor
+from spoolman.database import filament, printer, spool, vendor
 from spoolman.database.database import get_db_session
 from spoolman.database.models import Base
 from spoolman.export import dump_as_csv, dump_as_json
@@ -65,6 +65,20 @@ async def export_vendors(
 ) -> Response:
     all_vendors, _ = await vendor.find(db=db)
     return await _export(all_vendors, fmt)
+
+
+@router.get(
+    "/printers",
+    name="Export printers",
+    description="Export the list of printers in various formats. Spool data is included.",
+)
+async def export_printers(
+    *,
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+    fmt: ExportFormat,
+) -> Response:
+    all_printers, _ = await printer.find(db=db)
+    return await _export(all_printers, fmt)
 
 
 async def _export(objects: Iterable[Base], fmt: ExportFormat) -> Response:

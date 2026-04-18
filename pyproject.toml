@@ -46,6 +46,7 @@ help = "Bump Spoolman version."
 
 [tool.poe.tasks.run]
 cmd = "uvicorn spoolman.main:app"
+envfile = ".env"
 help = "Start Spoolman."
 
 [tool.poe.tasks.itest]
