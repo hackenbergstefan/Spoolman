@@ -7,6 +7,7 @@ export interface IPrinter {
   spool?: ISpool;
   comment?: string;
   external_id?: string;
+  prusaconnect_printer_uuid?: string;
   extra: { [key: string]: string };
 }
 

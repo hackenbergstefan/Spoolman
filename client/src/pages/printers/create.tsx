@@ -132,6 +132,18 @@ export const PrinterCreate = (props: IResourceComponentsProps & CreateOrClonePro
         >
           <TextArea maxLength={1024} />
         </Form.Item>
+        <Form.Item
+          label={t("printer.fields.prusaconnect_printer_uuid")}
+          help={t("printer.fields_help.prusaconnect_printer_uuid")}
+          name={["prusaconnect_printer_uuid"]}
+          rules={[
+            {
+              required: false,
+            },
+          ]}
+        >
+          <Input maxLength={256} placeholder="pMwjAJYBRnOmqLdB" />
+        </Form.Item>
         <Typography.Title level={5}>{t("settings.extra_fields.tab")}</Typography.Title>
         {extraFields.data?.map((field, index) => (
           <ExtraFieldFormItem key={index} field={field} />

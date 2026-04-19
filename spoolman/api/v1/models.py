@@ -378,6 +378,11 @@ class Printer(BaseModel):
             "Set if this printer comes from an external database. This contains the ID in the external database."
         ),
     )
+    prusaconnect_printer_uuid: str | None = Field(
+        None,
+        max_length=256,
+        description="PrusaConnect printer UUID. Set to enable automatic spool usage tracking via the cloud.",
+    )
     extra: dict[str, str] = Field(
         description=(
             "Extra fields for this printer. All values are JSON-encoded data. "
@@ -395,6 +400,7 @@ class Printer(BaseModel):
             spool=Spool.from_db(item.spool) if item.spool is not None else None,
             comment=item.comment,
             external_id=item.external_id,
+            prusaconnect_printer_uuid=item.prusaconnect_printer_uuid,
             extra={field.key: field.value for field in item.extra},
         )
 

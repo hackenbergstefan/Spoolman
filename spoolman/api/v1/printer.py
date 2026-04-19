@@ -44,6 +44,14 @@ class PrinterParameters(BaseModel):
             "Set if this printer comes from an external database. This contains the ID in the external database."
         ),
     )
+    prusaconnect_printer_uuid: str | None = Field(
+        None,
+        max_length=256,
+        description=(
+            "PrusaConnect printer UUID for this printer. Set to enable automatic spool usage tracking via the cloud."
+        ),
+        examples=["pMwjAJYBRnOmqLdB"],
+    )
     extra: dict[str, str] | None = Field(
         None,
         description="Extra fields for this printer.",
@@ -221,6 +229,7 @@ async def create(  # noqa: ANN201
             spool_id=body.spool_id,
             comment=body.comment,
             external_id=body.external_id,
+            prusaconnect_printer_uuid=body.prusaconnect_printer_uuid,
             extra=body.extra,
         )
     except ItemCreateError as e:

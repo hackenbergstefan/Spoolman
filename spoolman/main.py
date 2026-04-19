@@ -13,7 +13,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse, Response
 from prometheus_client import generate_latest
 from scheduler.asyncio.scheduler import Scheduler
 
-from spoolman import env, externaldb
+from spoolman import env, externaldb, prusaconnect
 from spoolman.api.v1.router import app as v1_app
 from spoolman.client import SinglePageApplication
 from spoolman.database import database
@@ -21,7 +21,7 @@ from spoolman.prometheus.metrics import registry
 
 # Define a console logger
 console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter("%(name)-26s %(levelname)-8s %(message)s"))
+console_handler.setFormatter(logging.Formatter("%(asctime)s %(name)-26s %(levelname)-8s %(message)s"))
 
 # Setup the spoolman logger, which all spoolman modules will use
 log_level = env.get_logging_level()
@@ -185,6 +185,7 @@ async def startup() -> None:
     schedule = Scheduler()
     database.schedule_tasks(schedule)
     externaldb.schedule_tasks(schedule)
+    prusaconnect.schedule_tasks(schedule)
 
     logger.info("Startup complete.")
 

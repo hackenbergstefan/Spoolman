@@ -129,6 +129,7 @@ class Printer(Base):
     spool: Mapped[Optional["Spool"]] = relationship(back_populates="printer")
     comment: Mapped[str | None] = mapped_column(String(1024))
     external_id: Mapped[str | None] = mapped_column(String(256))
+    prusaconnect_printer_uuid: Mapped[str | None] = mapped_column(String(256))
     extra: Mapped[list["PrinterField"]] = relationship(
         back_populates="printer",
         cascade="save-update, merge, delete, delete-orphan",

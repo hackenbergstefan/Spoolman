@@ -404,10 +404,12 @@
       "spool": "Assigned Spool",
       "external_id": "External ID",
       "registered": "Registered",
-      "comment": "Comment"
+      "comment": "Comment",
+      "prusaconnect_printer_uuid": "PrusaConnect Printer UUID"
     },
     "fields_help": {
-      "spool": "The spool currently loaded in this printer."
+      "spool": "The spool currently loaded in this printer.",
+      "prusaconnect_printer_uuid": "The UUID of this printer in PrusaConnect. Required for automatic spool usage tracking via the cloud. Found in your Prusa Connect dashboard."
     },
     "titles": {
       "create": "Create Printer",

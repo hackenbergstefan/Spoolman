@@ -24,8 +24,9 @@ dependencies = [
     "httpx~=0.28",
     "hishel~=0.1",
     "aiomysql[rsa]~=0.3",
+    "prusa-connect-sdk-client[cli]>=1.0.0",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 [dependency-groups]
 dev = [

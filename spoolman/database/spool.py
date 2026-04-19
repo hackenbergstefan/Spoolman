@@ -104,7 +104,9 @@ async def get_by_id(db: AsyncSession, spool_id: int) -> models.Spool:
     spool = await db.get(
         models.Spool,
         spool_id,
-        options=[joinedload("*")],  # Load all nested objects as well
+        options=[
+            joinedload(models.Spool.filament).joinedload(models.Filament.vendor),
+        ],
     )
     if spool is None:
         raise ItemNotFoundError(f"No spool with ID {spool_id} found.")

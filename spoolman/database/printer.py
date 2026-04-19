@@ -26,6 +26,7 @@ async def create(
     spool_id: int | None = None,
     comment: str | None = None,
     external_id: str | None = None,
+    prusaconnect_printer_uuid: str | None = None,
     extra: dict[str, str] | None = None,
 ) -> models.Printer:
     """Add a new printer to the database."""
@@ -39,6 +40,7 @@ async def create(
         spool_id=spool.id if spool is not None else None,
         comment=comment,
         external_id=external_id,
+        prusaconnect_printer_uuid=prusaconnect_printer_uuid,
         extra=[models.PrinterField(key=k, value=v) for k, v in (extra or {}).items()],
     )
     db.add(printer)
@@ -72,6 +74,7 @@ async def find(
     db: AsyncSession,
     name: str | None = None,
     external_id: str | None = None,
+    prusaconnect_printer_uuid: str | None = None,
     sort_by: dict[str, SortOrder] | None = None,
     limit: int | None = None,
     offset: int = 0,
@@ -86,6 +89,7 @@ async def find(
 
     stmt = add_where_clause_str(stmt, models.Printer.name, name)
     stmt = add_where_clause_str_opt(stmt, models.Printer.external_id, external_id)
+    stmt = add_where_clause_str_opt(stmt, models.Printer.prusaconnect_printer_uuid, prusaconnect_printer_uuid)
 
     total_count = None
 
