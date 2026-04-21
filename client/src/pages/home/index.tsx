@@ -1,4 +1,4 @@
-import { FileOutlined, HighlightOutlined, PlusOutlined, UnorderedListOutlined, UserOutlined } from "@ant-design/icons";
+import { FileOutlined, HighlightOutlined, PlusOutlined, PrinterOutlined, UnorderedListOutlined, UserOutlined } from "@ant-design/icons";
 import { useList, useTranslate } from "@refinedev/core";
 import { Card, Col, Row, Statistic, theme } from "antd";
 import { Content } from "antd/es/layout/layout";
@@ -29,6 +29,10 @@ export const Home = () => {
   });
   const vendors = useList<ISpool>({
     resource: "vendor",
+    pagination: { pageSize: 1 },
+  });
+  const printers = useList<ISpool>({
+    resource: "printer",
     pagination: { pageSize: 1 },
   });
 
@@ -104,6 +108,12 @@ export const Home = () => {
           value={vendors.result?.total || 0}
           loading={vendors.query.isLoading}
           icon={<UserOutlined />}
+        />
+        <ResourceStatsCard
+          resource="printer"
+          value={printers.result?.total || 0}
+          loading={printers.query.isLoading}
+          icon={<PrinterOutlined />}
         />
       </Row>
       {!hasSpools && (
