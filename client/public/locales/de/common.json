@@ -168,6 +168,7 @@
             "weight_to_use": "Gewicht",
             "used_weight": "Verbrauchtes Gewicht",
             "remaining_weight": "Verbleibendes Gewicht",
+            "remaining_percent": "Verbleibend",
             "measured_weight": "Gemessenes Gewicht",
             "used_length": "Verbrauchte Länge",
             "remaining_length": "Verbleibende Länge",
@@ -407,5 +408,35 @@
         "no_locations_help": "Diese Seite lässt Sie Ihre Spulen zu Orten zuweisen, fügen Sie ein paar Spulen hinzu um loszulegen!",
         "locations": "Orte",
         "new_location": "Neuer Ort"
+    },
+    "printer": {
+        "printer": "Drucker",
+        "fields": {
+            "id": "ID",
+            "name": "Name",
+            "spool": "Zugewiesene Spule",
+            "external_id": "Externe ID",
+            "registered": "Registriert",
+            "comment": "Kommentar",
+            "prusaconnect_printer_uuid": "PrusaConnect Drucker-UUID"
+        },
+        "fields_help": {
+            "spool": "Die aktuell in diesem Drucker eingelegte Spule.",
+            "prusaconnect_printer_uuid": "Die UUID dieses Druckers in PrusaConnect. Erforderlich für die automatische Verfolgung des Spulenverbrauchs über die Cloud. Zu finden in deinem Prusa Connect Dashboard."
+        },
+        "titles": {
+            "create": "Drucker erstellen",
+            "clone": "Drucker klonen",
+            "edit": "Drucker bearbeiten",
+            "list": "Drucker",
+            "show": "Drucker anzeigen",
+            "show_title": "[Drucker #{{id}}] {{name}}"
+        },
+        "form": {
+            "printer_updated": "Dieser Drucker wurde von jemandem/etwas anderem aktualisiert, seit du diese Seite geöffnet hast. Beim Speichern werden diese Änderungen überschrieben!"
+        },
+        "buttons": {
+            "set_spool": "Spule zuweisen"
+        }
     }
 }
