@@ -14,6 +14,7 @@ import {
     SortedColumn,
 } from "../../components/column";
 import { useLiveify } from "../../components/liveify";
+import { SpoolProgress } from "../../components/spoolProgress";
 import { removeUndefined } from "../../utils/filtering";
 import { EntityType, useGetFields } from "../../utils/queryFields";
 import { TableState, useInitialTableState, useStoreInitialState } from "../../utils/saveload";
@@ -232,7 +233,12 @@ export const PrinterList = () => {
               const filamentName = spool.filament?.name ?? "";
               const vendorName = spool.filament?.vendor?.name ?? "";
               const label = [vendorName, filamentName].filter(Boolean).join(" - ");
-              return label || `Spool #${spool.id}`;
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 160 }}>
+                  <span>{label || `Spool #${spool.id}`}</span>
+                  <SpoolProgress spool={spool} width="100%" />
+                </div>
+              );
             },
             hidden: !showColumns.includes("spool"),
           },

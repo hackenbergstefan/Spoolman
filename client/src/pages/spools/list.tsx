@@ -1,12 +1,12 @@
 import {
-  EditOutlined,
-  EyeOutlined,
-  FilterOutlined,
-  InboxOutlined,
-  PlusSquareOutlined,
-  PrinterOutlined,
-  ToolOutlined,
-  ToTopOutlined,
+    EditOutlined,
+    EyeOutlined,
+    FilterOutlined,
+    InboxOutlined,
+    PlusSquareOutlined,
+    PrinterOutlined,
+    ToolOutlined,
+    ToTopOutlined,
 } from "@ant-design/icons";
 import { List, useTable } from "@refinedev/antd";
 import { useInvalidate, useNavigation, useTranslate } from "@refinedev/core";
@@ -16,23 +16,24 @@ import utc from "dayjs/plugin/utc";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Action,
-  ActionsColumn,
-  CustomFieldColumn,
-  DateColumn,
-  FilteredQueryColumn,
-  NumberColumn,
-  RichColumn,
-  SortedColumn,
-  SpoolIconColumn,
+    Action,
+    ActionsColumn,
+    CustomFieldColumn,
+    DateColumn,
+    FilteredQueryColumn,
+    NumberColumn,
+    RichColumn,
+    SortedColumn,
+    SpoolIconColumn,
 } from "../../components/column";
 import { useLiveify } from "../../components/liveify";
 import {
-  useSpoolmanFilamentFilter,
-  useSpoolmanLocations,
-  useSpoolmanLotNumbers,
-  useSpoolmanMaterials,
+    useSpoolmanFilamentFilter,
+    useSpoolmanLocations,
+    useSpoolmanLotNumbers,
+    useSpoolmanMaterials,
 } from "../../components/otherModels";
+import { SpoolProgress } from "../../components/spoolProgress";
 import { removeUndefined } from "../../utils/filtering";
 import { EntityType, useGetFields } from "../../utils/queryFields";
 import { TableState, useInitialTableState, useSavedState, useStoreInitialState } from "../../utils/saveload";
@@ -77,13 +78,14 @@ function translateColumnI18nKey(columnName: string): string {
 
 const namespace = "spoolList-v2";
 
-const allColumns: (keyof ISpoolCollapsed & string)[] = [
+const allColumns: ((keyof ISpoolCollapsed & string) | "remaining_percent")[] = [
   "id",
   "filament.combined_name",
   "filament.material",
   "price",
   "used_weight",
   "remaining_weight",
+  "remaining_percent",
   "used_length",
   "remaining_length",
   "location",
@@ -405,6 +407,14 @@ export const SpoolList = () => {
             defaultText: t("unknown"),
             width: 110,
           }),
+          {
+            title: t("spool.fields.remaining_percent"),
+            dataIndex: "remaining_percent",
+            key: "remaining_percent",
+            width: 150,
+            render: (_: unknown, record: ISpoolCollapsed) => <SpoolProgress spool={record} />,
+            hidden: !showColumns.includes("remaining_percent"),
+          },
           NumberColumn({
             ...commonProps,
             id: "used_length",
