@@ -1,43 +1,44 @@
 import {
-    EditOutlined,
-    EyeOutlined,
-    FilterOutlined,
-    InboxOutlined,
-    PlusSquareOutlined,
-    PrinterOutlined,
-    ToolOutlined,
-    ToTopOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FilterOutlined,
+  InboxOutlined,
+  PlusSquareOutlined,
+  PrinterOutlined,
+  ToolOutlined,
+  ToTopOutlined,
 } from "@ant-design/icons";
-import { List, useTable } from "@refinedev/antd";
-import { useInvalidate, useNavigation, useTranslate } from "@refinedev/core";
-import { Button, Dropdown, Modal, Table } from "antd";
+import { List, useSelect, useTable } from "@refinedev/antd";
+import { useInvalidate, useNavigation, useTranslate, useUpdate } from "@refinedev/core";
+import { Button, Dropdown, Modal, Select, Table } from "antd";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-    Action,
-    ActionsColumn,
-    CustomFieldColumn,
-    DateColumn,
-    FilteredQueryColumn,
-    NumberColumn,
-    RichColumn,
-    SortedColumn,
-    SpoolIconColumn,
+  Action,
+  ActionsColumn,
+  CustomFieldColumn,
+  DateColumn,
+  FilteredQueryColumn,
+  NumberColumn,
+  RichColumn,
+  SortedColumn,
+  SpoolIconColumn,
 } from "../../components/column";
 import { useLiveify } from "../../components/liveify";
 import {
-    useSpoolmanFilamentFilter,
-    useSpoolmanLocations,
-    useSpoolmanLotNumbers,
-    useSpoolmanMaterials,
+  useSpoolmanFilamentFilter,
+  useSpoolmanLocations,
+  useSpoolmanLotNumbers,
+  useSpoolmanMaterials,
 } from "../../components/otherModels";
 import { SpoolProgress } from "../../components/spoolProgress";
 import { removeUndefined } from "../../utils/filtering";
 import { EntityType, useGetFields } from "../../utils/queryFields";
 import { TableState, useInitialTableState, useSavedState, useStoreInitialState } from "../../utils/saveload";
 import { useCurrencyFormatter } from "../../utils/settings";
+import { IPrinter } from "../printers/model";
 import { setSpoolArchived, useSpoolAdjustModal } from "./functions";
 import { ISpool } from "./model";
 
@@ -106,6 +107,45 @@ export const SpoolList = () => {
   const extraFields = useGetFields(EntityType.spool);
   const currencyFormatter = useCurrencyFormatter();
   const { openSpoolAdjustModal, spoolAdjustModal } = useSpoolAdjustModal();
+
+  // Assign-to-printer modal state
+  const [printerModalOpen, setPrinterModalOpen] = useState(false);
+  const [printerModalSpool, setPrinterModalSpool] = useState<ISpoolCollapsed | null>(null);
+  const [printerModalValue, setPrinterModalValue] = useState<number | undefined>(undefined);
+  const { mutate: updatePrinter } = useUpdate();
+  const { query: printerQuery } = useSelect<IPrinter>({
+    resource: "printer",
+    optionLabel: "name",
+    optionValue: "id",
+    pagination: { mode: "off" },
+  });
+  const printerOptions = printerQuery.data?.data?.map((printer: IPrinter) => ({
+    value: printer.id,
+    label: `#${printer.id} - ${printer.name}`,
+  })) ?? [];
+
+  const openPrinterModal = (record: ISpoolCollapsed) => {
+    setPrinterModalSpool(record);
+    setPrinterModalValue(undefined);
+    setPrinterModalOpen(true);
+  };
+
+  const handlePrinterModalOk = () => {
+    if (!printerModalSpool || printerModalValue === undefined) return;
+    updatePrinter(
+      {
+        resource: "printer",
+        id: printerModalValue,
+        values: { spool_id: printerModalSpool.id },
+      },
+      {
+        onSuccess: () => {
+          setPrinterModalOpen(false);
+          invalidate({ resource: "printer", invalidates: ["list"] });
+        },
+      },
+    );
+  };
 
   const allColumnsWithExtraFields = [...allColumns, ...(extraFields.data?.map((field) => "extra." + field.key) ?? [])];
 
@@ -219,6 +259,7 @@ export const SpoolList = () => {
         { name: t("buttons.edit"), icon: <EditOutlined />, link: editUrl("spool", record.id) },
         { name: t("buttons.clone"), icon: <PlusSquareOutlined />, link: cloneUrl("spool", record.id) },
         { name: t("spool.titles.adjust"), icon: <ToolOutlined />, onClick: () => openSpoolAdjustModal(record) },
+        { name: t("spool.buttons.assign_printer"), icon: <PrinterOutlined />, onClick: () => openPrinterModal(record) },
       ];
       if (record.archived) {
         actions.push({
@@ -328,6 +369,26 @@ export const SpoolList = () => {
       )}
     >
       {spoolAdjustModal}
+      <Modal
+        title={t("spool.buttons.assign_printer")}
+        open={printerModalOpen}
+        onOk={handlePrinterModalOk}
+        onCancel={() => setPrinterModalOpen(false)}
+      >
+        <Select
+          options={printerOptions}
+          value={printerModalValue}
+          onChange={(val) => setPrinterModalValue(val)}
+          allowClear
+          showSearch
+          filterOption={(input, option) =>
+            String(option?.label ?? "")
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+          style={{ width: "100%" }}
+        />
+      </Modal>
       <Table
         {...tableProps}
         sticky

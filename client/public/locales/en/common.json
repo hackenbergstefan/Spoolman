@@ -212,6 +212,9 @@
     },
     "formats": {
       "last_used": "Last used {{date}}"
+    },
+    "buttons": {
+      "assign_printer": "Assign to Printer"
     }
   },
   "filament": {

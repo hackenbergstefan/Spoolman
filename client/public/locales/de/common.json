@@ -223,6 +223,9 @@
         },
         "formats": {
             "last_used": "Zuletzt genutzt {{date}}"
+        },
+        "buttons": {
+            "assign_printer": "Drucker zuweisen"
         }
     },
     "filament": {
