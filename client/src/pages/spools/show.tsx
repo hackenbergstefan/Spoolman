@@ -1,9 +1,10 @@
-import { InboxOutlined, PrinterOutlined, ToTopOutlined, ToolOutlined } from "@ant-design/icons";
-import { DateField, NumberField, Show, TextField } from "@refinedev/antd";
-import { useInvalidate, useShow, useTranslate } from "@refinedev/core";
-import { Button, Modal, Typography } from "antd";
+import { InboxOutlined, PrinterOutlined, SwapOutlined, ToTopOutlined, ToolOutlined } from "@ant-design/icons";
+import { DateField, NumberField, Show, TextField, useSelect } from "@refinedev/antd";
+import { useInvalidate, useShow, useTranslate, useUpdate } from "@refinedev/core";
+import { Button, Modal, Select, Typography } from "antd";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { useState } from "react";
 import { ExtraFieldDisplay } from "../../components/extraFields";
 import { NumberFieldUnit } from "../../components/numberField";
 import SpoolIcon from "../../components/spoolIcon";
@@ -12,6 +13,7 @@ import { EntityType, useGetFields } from "../../utils/queryFields";
 import { useCurrencyFormatter } from "../../utils/settings";
 import { getBasePath } from "../../utils/url";
 import { IFilament } from "../filaments/model";
+import { IPrinter } from "../printers/model";
 import { setSpoolArchived, useSpoolAdjustModal } from "./functions";
 import { ISpool } from "./model";
 
@@ -43,6 +45,38 @@ export const SpoolShow = () => {
 
   // Provides the function to open the spool adjustment modal and the modal component itself
   const { openSpoolAdjustModal, spoolAdjustModal } = useSpoolAdjustModal();
+
+  // Assign-to-printer modal
+  const [printerModalOpen, setPrinterModalOpen] = useState(false);
+  const [printerModalValue, setPrinterModalValue] = useState<number | undefined>(undefined);
+  const { mutate: updatePrinter } = useUpdate();
+  const { query: printerQuery } = useSelect<IPrinter>({
+    resource: "printer",
+    optionLabel: "name",
+    optionValue: "id",
+    pagination: { mode: "off" },
+  });
+  const printerOptions = printerQuery.data?.data?.map((printer: IPrinter) => ({
+    value: printer.id,
+    label: `#${printer.id} - ${printer.name}`,
+  })) ?? [];
+
+  const handlePrinterModalOk = () => {
+    if (!record || printerModalValue === undefined) return;
+    updatePrinter(
+      {
+        resource: "printer",
+        id: printerModalValue,
+        values: { spool_id: record.id },
+      },
+      {
+        onSuccess: () => {
+          setPrinterModalOpen(false);
+          invalidate({ resource: "printer", invalidates: ["list"] });
+        },
+      },
+    );
+  };
 
   // Function for opening an ant design modal that asks for confirmation for archiving a spool
   const archiveSpool = async (spool: ISpool, archive: boolean) => {
@@ -122,6 +156,16 @@ export const SpoolShow = () => {
           </Button>
           <Button
             type="primary"
+            icon={<SwapOutlined />}
+            onClick={() => {
+              setPrinterModalValue(undefined);
+              setPrinterModalOpen(true);
+            }}
+          >
+            {t("spool.buttons.assign_printer")}
+          </Button>
+          <Button
+            type="primary"
             icon={<PrinterOutlined />}
             href={
               getBasePath() +
@@ -145,6 +189,26 @@ export const SpoolShow = () => {
 
           {defaultButtons}
           {spoolAdjustModal}
+          <Modal
+            title={t("spool.buttons.assign_printer")}
+            open={printerModalOpen}
+            onOk={handlePrinterModalOk}
+            onCancel={() => setPrinterModalOpen(false)}
+          >
+            <Select
+              options={printerOptions}
+              value={printerModalValue}
+              onChange={(val) => setPrinterModalValue(val)}
+              allowClear
+              showSearch
+              filterOption={(input, option) =>
+                String(option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              style={{ width: "100%" }}
+            />
+          </Modal>
         </>
       )}
     >
