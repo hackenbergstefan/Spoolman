@@ -7,11 +7,11 @@ import utc from "dayjs/plugin/utc";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-    ActionsColumn,
-    CustomFieldColumn,
-    DateColumn,
-    RichColumn,
-    SortedColumn,
+  ActionsColumn,
+  CustomFieldColumn,
+  DateColumn,
+  RichColumn,
+  SortedColumn,
 } from "../../components/column";
 import { useLiveify } from "../../components/liveify";
 import { SpoolProgress } from "../../components/spoolProgress";
@@ -235,7 +235,7 @@ export const PrinterList = () => {
               const label = [vendorName, filamentName].filter(Boolean).join(" - ");
               return (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 160 }}>
-                  <span>{label || `Spool #${spool.id}`}</span>
+                  <span>{`#${spool.id} ${label}`}</span>
                   <SpoolProgress spool={spool} width="100%" />
                 </div>
               );
