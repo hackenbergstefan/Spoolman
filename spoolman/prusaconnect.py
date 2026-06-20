@@ -243,7 +243,7 @@ async def _handle_print_ended(
         return
 
     try:
-        await db_spool.use_length(db, printer.spool_id, used_mm)
+        await db_spool.use_length(db, printer.spool_id, used_mm, printer_id=printer.id)
         logger.info(
             "Updated spool #%d by %.1f mm for printer '%s' (state: %s, progress: %.0f%%)",
             printer.spool_id,

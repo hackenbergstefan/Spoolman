@@ -62,7 +62,8 @@ async def spool_metrics(db: AsyncSession) -> None:
             SPOOL_PRICE.labels(str(row.id), str(row.filament_id)).set(row.price)
         if row.initial_weight is not None:
             SPOOL_INITIAL_WEIGHT.labels(str(row.id), str(row.filament_id)).set(row.initial_weight)
-        SPOOL_USED_WEIGHT.labels(str(row.id), str(row.filament_id)).set(row.used_weight)
+        used_weight = sum(u.used_weight for u in row.usages) if row.usages else 0.0
+        SPOOL_USED_WEIGHT.labels(str(row.id), str(row.filament_id)).set(max(used_weight, 0.0))
 
 
 async def filament_metrics(db: AsyncSession) -> None:

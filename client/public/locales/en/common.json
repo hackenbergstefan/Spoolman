@@ -429,5 +429,20 @@
     "buttons": {
       "set_spool": "Set Spool"
     }
+  },
+  "spoolUsage": {
+    "spoolUsage": "Usage History",
+    "fields": {
+      "id": "ID",
+      "spool_id": "Spool",
+      "printer_id": "Printer",
+      "timestamp": "Timestamp",
+      "used_weight": "Used Weight (g)",
+      "used_length": "Used Length (m)"
+    },
+    "titles": {
+      "list": "Usage History",
+      "change_spool": "Change Spool"
+    }
   }
 }

@@ -14,6 +14,7 @@ import { useCurrencyFormatter } from "../../utils/settings";
 import { getBasePath } from "../../utils/url";
 import { IFilament } from "../filaments/model";
 import { IPrinter } from "../printers/model";
+import { SpoolUsageTable } from "../spoolUsage/usageTable";
 import { setSpoolArchived, useSpoolAdjustModal } from "./functions";
 import { ISpool } from "./model";
 
@@ -287,6 +288,7 @@ export const SpoolShow = () => {
       {extraFields?.data?.map((field, index) => (
         <ExtraFieldDisplay key={index} field={field} value={record?.extra[field.key]} />
       ))}
+      {record && <SpoolUsageTable spoolId={record.id} />}
     </Show>
   );
 };

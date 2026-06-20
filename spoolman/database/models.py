@@ -64,19 +64,21 @@ class Spool(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     registered: Mapped[datetime] = mapped_column()
-    first_used: Mapped[datetime | None] = mapped_column()
-    last_used: Mapped[datetime | None] = mapped_column()
     price: Mapped[float | None] = mapped_column()
     filament_id: Mapped[int] = mapped_column(ForeignKey("filament.id"))
     filament: Mapped["Filament"] = relationship(back_populates="spools")
     initial_weight: Mapped[float | None] = mapped_column()
     spool_weight: Mapped[float | None] = mapped_column()
-    used_weight: Mapped[float] = mapped_column()
     location: Mapped[str | None] = mapped_column(String(64))
     lot_nr: Mapped[str | None] = mapped_column(String(64))
     comment: Mapped[str | None] = mapped_column(String(1024))
     archived: Mapped[bool | None] = mapped_column()
     printer: Mapped[Optional["Printer"]] = relationship(back_populates="spool")
+    usages: Mapped[list["SpoolUsage"]] = relationship(
+        back_populates="spool",
+        cascade="save-update, merge, delete, delete-orphan",
+        lazy="selectin",
+    )
     extra: Mapped[list["SpoolField"]] = relationship(
         back_populates="spool",
         cascade="save-update, merge, delete, delete-orphan",
@@ -117,6 +119,18 @@ class SpoolField(Base):
     spool: Mapped["Spool"] = relationship(back_populates="extra")
     key: Mapped[str] = mapped_column(String(64), primary_key=True, index=True)
     value: Mapped[str] = mapped_column(Text())
+
+
+class SpoolUsage(Base):
+    __tablename__ = "spool_usage"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    spool_id: Mapped[int] = mapped_column(ForeignKey("spool.id"), index=True)
+    spool: Mapped["Spool"] = relationship(back_populates="usages")
+    printer_id: Mapped[int | None] = mapped_column(ForeignKey("printer.id"), index=True)
+    printer: Mapped[Optional["Printer"]] = relationship()
+    timestamp: Mapped[datetime] = mapped_column()
+    used_weight: Mapped[float] = mapped_column(comment="Weight of filament used in grams. Negative for corrections.")
 
 
 class Printer(Base):

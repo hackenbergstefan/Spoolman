@@ -11,7 +11,7 @@ from spoolman.database import models
 if TYPE_CHECKING:
     from _typeshed import SupportsWrite
 
-banned_attrs = {"awaitable_attrs", "metadata", "registry", "spools", "filaments"}
+banned_attrs = {"awaitable_attrs", "metadata", "registry", "spools", "filaments", "usages"}
 
 
 async def flatten_sqlalchemy_object(obj: models.Base, parent_key: str = "", sep: str = ".") -> dict[str, Any]:

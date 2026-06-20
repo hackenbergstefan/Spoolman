@@ -6,14 +6,15 @@ import { ErrorComponent } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 
 import {
-  FileOutlined,
-  HighlightOutlined,
-  HomeOutlined,
-  PrinterOutlined,
-  QuestionOutlined,
-  TableOutlined,
-  ToolOutlined,
-  UserOutlined,
+    FileOutlined,
+    HighlightOutlined,
+    HistoryOutlined,
+    HomeOutlined,
+    PrinterOutlined,
+    QuestionOutlined,
+    TableOutlined,
+    ToolOutlined,
+    UserOutlined,
 } from "@ant-design/icons";
 import loadable from "@loadable/component";
 import routerBindings, { DocumentTitleHandler, UnsavedChangesNotifier } from "@refinedev/react-router";
@@ -156,6 +157,14 @@ function App() {
                   },
                 },
                 {
+                  name: "spool_usage",
+                  list: "/spool-usage",
+                  meta: {
+                    canDelete: false,
+                    icon: <HistoryOutlined />,
+                  },
+                },
+                {
                   name: "locations",
                   list: "/locations",
                   meta: {
@@ -248,6 +257,7 @@ function App() {
                     <Route path="edit/:id" element={<LoadableResourcePage resource="printers" page="edit" />} />
                     <Route path="show/:id" element={<LoadableResourcePage resource="printers" page="show" />} />
                   </Route>
+                  <Route path="/spool-usage" element={<LoadablePage name="spoolUsage" />} />
                   <Route path="/settings/*" element={<LoadablePage name="settings" />} />
                   <Route path="/help" element={<LoadablePage name="help" />} />
                   <Route path="/locations" element={<LoadablePage name="locations" />} />

@@ -11,8 +11,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from spoolman.api.v1.models import Message, Spool, SpoolEvent
+from spoolman.api.v1.models import Message, Spool, SpoolEvent, SpoolUsageResponse
 from spoolman.database import spool
+from spoolman.database import spool_usage as spool_usage_db
 from spoolman.database.database import get_db_session
 from spoolman.database.utils import SortOrder
 from spoolman.exceptions import ItemCreateError, SpoolMeasureError
@@ -30,8 +31,6 @@ router = APIRouter(
 
 
 class SpoolParameters(BaseModel):
-    first_used: datetime | None = Field(None, description="First logged occurence of spool usage.")
-    last_used: datetime | None = Field(None, description="Last logged occurence of spool usage.")
     filament_id: int = Field(description="The ID of the filament type of this spool.")
     price: float | None = Field(
         None,
@@ -105,10 +104,12 @@ class SpoolUpdateParameters(SpoolParameters):
 class SpoolUseParameters(BaseModel):
     use_length: float | None = Field(None, description="Length of filament to reduce by, in mm.", examples=[2.2])
     use_weight: float | None = Field(None, description="Filament weight to reduce by, in g.", examples=[5.3])
+    printer_id: int | None = Field(None, description="The printer that used the filament, if any.")
 
 
 class SpoolMeasureParameters(BaseModel):
     weight: float = Field(description="Current gross weight of the spool, in g.", examples=[200])
+    printer_id: int | None = Field(None, description="The printer that used the filament, if any.")
 
 
 @router.get(
@@ -405,8 +406,6 @@ async def create(  # noqa: ANN201
             spool_weight=body.spool_weight,
             remaining_weight=body.remaining_weight,
             used_weight=body.used_weight,
-            first_used=body.first_used,
-            last_used=body.last_used,
             location=body.location,
             lot_nr=body.lot_nr,
             comment=body.comment,
@@ -513,11 +512,11 @@ async def use(  # noqa: ANN201
         )
 
     if body.use_weight is not None:
-        db_item = await spool.use_weight(db, spool_id, body.use_weight)
+        db_item = await spool.use_weight(db, spool_id, body.use_weight, printer_id=body.printer_id)
         return Spool.from_db(db_item)
 
     if body.use_length is not None:
-        db_item = await spool.use_length(db, spool_id, body.use_length)
+        db_item = await spool.use_length(db, spool_id, body.use_length, printer_id=body.printer_id)
         return Spool.from_db(db_item)
 
     return JSONResponse(
@@ -543,7 +542,7 @@ async def measure(  # noqa: ANN201
     body: SpoolMeasureParameters,
 ):
     try:
-        db_item = await spool.measure(db, spool_id, body.weight)
+        db_item = await spool.measure(db, spool_id, body.weight, printer_id=body.printer_id)
         return Spool.from_db(db_item)
     except SpoolMeasureError as e:
         logger.exception("Failed to update spool measurement.")
@@ -551,3 +550,32 @@ async def measure(  # noqa: ANN201
             status_code=400,
             content={"message": e.args[0]},
         )
+
+
+@router.get(
+    "/{spool_id}/usage",
+    name="Get spool usage history",
+    description="Get the usage history for a specific spool.",
+    response_model_exclude_none=True,
+    responses={
+        200: {"model": list[SpoolUsageResponse]},
+        404: {"model": Message},
+    },
+)
+async def get_usage(
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+    spool_id: int,
+    limit: Annotated[
+        int | None,
+        Query(title="Limit", description="Maximum number of items in the response."),
+    ] = None,
+    offset: Annotated[int, Query(title="Offset", description="Offset in the full result set if a limit is set.")] = 0,
+) -> JSONResponse:
+    db_items, total_count = await spool_usage_db.find_by_spool(db, spool_id, limit=limit, offset=offset)
+    return JSONResponse(
+        content=jsonable_encoder(
+            [SpoolUsageResponse.from_db(item) for item in db_items],
+            exclude_none=True,
+        ),
+        headers={"x-total-count": str(total_count)},
+    )

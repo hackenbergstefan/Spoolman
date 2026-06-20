@@ -315,18 +315,30 @@ class Spool(BaseModel):
         """Create a new Pydantic spool object from a database spool object."""
         filament = Filament.from_db(item.filament)
 
+        # Compute used_weight from usage records
+        used_weight = sum(u.used_weight for u in item.usages) if item.usages else 0.0
+        used_weight = max(used_weight, 0.0)
+
+        # Compute first_used and last_used from usage records
+        first_used = None
+        last_used = None
+        if item.usages:
+            timestamps = [u.timestamp for u in item.usages]
+            first_used = min(timestamps)
+            last_used = max(timestamps)
+
         remaining_weight: float | None = None
         remaining_length: float | None = None
 
         if item.initial_weight is not None:
-            remaining_weight = max(item.initial_weight - item.used_weight, 0)
+            remaining_weight = max(item.initial_weight - used_weight, 0)
             remaining_length = length_from_weight(
                 weight=remaining_weight,
                 density=filament.density,
                 diameter=filament.diameter,
             )
         elif filament.weight is not None:
-            remaining_weight = max(filament.weight - item.used_weight, 0)
+            remaining_weight = max(filament.weight - used_weight, 0)
             remaining_length = length_from_weight(
                 weight=remaining_weight,
                 density=filament.density,
@@ -334,7 +346,7 @@ class Spool(BaseModel):
             )
 
         used_length = length_from_weight(
-            weight=item.used_weight,
+            weight=used_weight,
             density=filament.density,
             diameter=filament.diameter,
         )
@@ -342,13 +354,13 @@ class Spool(BaseModel):
         return Spool(
             id=item.id,
             registered=item.registered,
-            first_used=item.first_used,
-            last_used=item.last_used,
+            first_used=first_used,
+            last_used=last_used,
             filament=filament,
             price=item.price,
             initial_weight=item.initial_weight,
             spool_weight=item.spool_weight,
-            used_weight=item.used_weight,
+            used_weight=used_weight,
             used_length=used_length,
             remaining_weight=remaining_weight,
             remaining_length=remaining_length,
@@ -357,6 +369,52 @@ class Spool(BaseModel):
             comment=item.comment,
             archived=item.archived if item.archived is not None else False,
             extra={field.key: field.value for field in item.extra},
+        )
+
+
+class SpoolUsageResponse(BaseModel):
+    id: int = Field(description="Unique internal ID of this usage record.")
+    spool_id: int = Field(description="The spool that was used.")
+    spool_name: str | None = Field(None, description="Display name of the spool (vendor + filament name).")
+    printer_id: int | None = Field(None, description="The printer that used the spool, if any.")
+    timestamp: SpoolmanDateTime = Field(description="When the usage occurred. UTC Timezone.")
+    used_weight: float = Field(description="Weight of filament used in grams. Negative for corrections.")
+    used_length: float | None = Field(None, description="Length of filament used in mm. Computed from weight.")
+
+    @staticmethod
+    def from_db(item: models.SpoolUsage) -> "SpoolUsageResponse":
+        """Create a new Pydantic usage object from a database usage object."""
+        used_length: float | None = None
+        spool_name: str | None = None
+
+        if item.spool and item.spool.filament:
+            fil = item.spool.filament
+            used_length = length_from_weight(
+                weight=abs(item.used_weight),
+                density=fil.density,
+                diameter=fil.diameter,
+            )
+            if item.used_weight < 0:
+                used_length = -used_length
+
+            # Build display name
+            parts = []
+            if fil.vendor and fil.vendor.name:
+                parts.append(fil.vendor.name)
+            if fil.name:
+                parts.append(fil.name)
+            elif not parts:
+                parts.append(f"Spool #{item.spool_id}")
+            spool_name = " - ".join(parts)
+
+        return SpoolUsageResponse(
+            id=item.id,
+            spool_id=item.spool_id,
+            spool_name=spool_name,
+            printer_id=item.printer_id,
+            timestamp=item.timestamp,
+            used_weight=item.used_weight,
+            used_length=used_length,
         )
 
 
